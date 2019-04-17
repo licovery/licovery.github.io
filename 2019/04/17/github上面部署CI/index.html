@@ -5,15 +5,21 @@
   
 
   
-  <title>Hexo</title>
+  <title>为某个github的项目部署CI | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为某个github的项目部署CI">
+<meta property="og:url" content="http://yoursite.com/2019/04/17/github上面部署CI/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="https://travis-ci.org/licovery/redis-3.0-annotated.svg?branch=unstable">
+<meta property="og:updated_time" content="2019-04-17T15:37:05.247Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="为某个github的项目部署CI">
+<meta name="twitter:description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
+<meta name="twitter:image" content="https://travis-ci.org/licovery/redis-3.0-annotated.svg?branch=unstable">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -60,9 +66,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-github上面部署CI" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-github上面部署CI" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/04/17/github上面部署CI/" class="article-date">
   <time datetime="2019-04-17T14:49:35.000Z" itemprop="datePublished">2019-04-17</time>
@@ -75,8 +79,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/17/github上面部署CI/">为某个github的项目部署CI</a>
+    <h1 class="article-title" itemprop="name">
+      为某个github的项目部署CI
     </h1>
   
 
@@ -113,96 +117,19 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-my-first-blog" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/04/12/my-first-blog/" class="article-date">
-  <time datetime="2019-04-12T14:17:28.000Z" itemprop="datePublished">2019-04-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/12/my-first-blog/">为什么写博客？</a>
-    </h1>
+    <a href="/2019/04/12/my-first-blog/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">为什么写博客？</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>互联网上面有太多的资料和资源可以获取，获取信息本身不难，如何有效地利用它们是一件困难的事情。我写这个博客是希望自己能把从网络上学习到的知识，经过自己的理解，用自己的逻辑思维方式再次表达出来，同时写作本身又是加深知识理解的一种方式。</p>
-<p>其实我是有记录笔记的习惯的，一般是用印象笔记来记录下工作或者学习上的一些知识点。但是太过于零碎，希望可以通过写博文的方式，把那些零碎的知识串联起来，形成一个相应的知识体系。</p>
-<p>我是一个十分讨厌写作的人，我自认自己写作能力极差，但是我还是决定努力用自己有限的能力把博文写出来，也不是为了给谁看，就是想通过写作来总结一些知识和信息。</p>
-<p>世界上有太多的未知值得我们去探索，希望自己能永远保持对知识的热忱！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/12/my-first-blog/" data-id="cjulda2rv0002agajn0ur1mt7" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
   
 </article>
-
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/04/12/hello-world/" class="article-date">
-  <time datetime="2019-04-12T14:14:07.680Z" itemprop="datePublished">2019-04-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/12/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/12/hello-world/" data-id="cjulda2ri0001agaj5x33ifav" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
 
 </section>
         
