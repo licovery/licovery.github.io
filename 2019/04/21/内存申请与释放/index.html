@@ -5,15 +5,19 @@
   
 
   
-  <title>Hexo</title>
+  <title>内存申请，初始化与释放 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="在实现业务代码的时候，总不可避免地要动态申请内存。在C语言中，没有自动回收内存的机制，所以必须手动释放内存。如果没有正确释放内存，就会出现内存泄露。如果是在服务器端的程序出现内存泄露，那必定会导致服务不稳定，长期运行总会耗尽内存而导致无法新申请出内存，影响业务。 在C语言中，申请内存调用的是alloc类函数（之所以说类，是因为有malloc calloc realloc三种），释放内存使用free">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内存申请，初始化与释放">
+<meta property="og:url" content="http://yoursite.com/2019/04/21/内存申请与释放/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="在实现业务代码的时候，总不可避免地要动态申请内存。在C语言中，没有自动回收内存的机制，所以必须手动释放内存。如果没有正确释放内存，就会出现内存泄露。如果是在服务器端的程序出现内存泄露，那必定会导致服务不稳定，长期运行总会耗尽内存而导致无法新申请出内存，影响业务。 在C语言中，申请内存调用的是alloc类函数（之所以说类，是因为有malloc calloc realloc三种），释放内存使用free">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-04-21T08:14:31.931Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="内存申请，初始化与释放">
+<meta name="twitter:description" content="在实现业务代码的时候，总不可避免地要动态申请内存。在C语言中，没有自动回收内存的机制，所以必须手动释放内存。如果没有正确释放内存，就会出现内存泄露。如果是在服务器端的程序出现内存泄露，那必定会导致服务不稳定，长期运行总会耗尽内存而导致无法新申请出内存，影响业务。 在C语言中，申请内存调用的是alloc类函数（之所以说类，是因为有malloc calloc realloc三种），释放内存使用free">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -60,9 +64,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-内存申请与释放" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-内存申请与释放" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/04/21/内存申请与释放/" class="article-date">
   <time datetime="2019-04-21T06:27:31.000Z" itemprop="datePublished">2019-04-21</time>
@@ -75,8 +77,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/21/内存申请与释放/">内存申请，初始化与释放</a>
+    <h1 class="article-title" itemprop="name">
+      内存申请，初始化与释放
     </h1>
   
 
@@ -111,151 +113,19 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-github上面部署CI" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/04/17/github上面部署CI/" class="article-date">
-  <time datetime="2019-04-17T14:49:35.000Z" itemprop="datePublished">2019-04-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/17/github上面部署CI/">为某个github的项目部署CI</a>
-    </h1>
+    <a href="/2019/04/17/github上面部署CI/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">为某个github的项目部署CI</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。</p>
-<p>个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到git上面的每一次commit，更容易定位问题和提升项目质量。</p>
-<p>在某国外搜索引擎中了解到了<a href="https://travis-ci.org/" target="_blank" rel="noopener">https://travis-ci.org</a>，可以给github上的公开repo部署CI，教程网上一搜就一大堆，就不具体说了，说说遇到的坑和学习到的东西。</p>
-<p>首先travis是通过一个.travis.yml文件来自动化构建的。yml似乎是一种配置文件的格式，应该跟json差不多，在官网上看看语法就开始用了。我的项目很简单，因为我要跑CI的repo是fork的Redis，所以已经写好了测试的脚本。我只需要把构建的流程走一下就好了。</p>
-<p>官网的说法是，只要你把正确的.travis.yml放在repo的根目录下，并且在travis网站，用github账户登录并且激活这个仓库的构建。你以后每次push代码到仓库上，就能自动触发一次build</p>
-<p>最后配置的.travis.xml差不多长这样：</p>
-<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">language:</span> <span class="string">c</span></span><br><span class="line"><span class="attr">notifications:</span>     </span><br><span class="line"><span class="attr">  email:</span> <span class="literal">false</span></span><br><span class="line"><span class="string">sudo</span> <span class="string">:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">before_install:</span> <span class="string">chmod</span> <span class="string">+x</span> <span class="string">runtest-ci</span></span><br><span class="line"><span class="string">script</span> <span class="string">:</span> <span class="string">./runtest-ci</span></span><br></pre></td></tr></table></figure>
-<p>意思是说项目用的C语言，每次build不需要邮件通知。使用root权限，给runtest-ci这个脚本执行权限，最后直接执行测试脚本。我这里面省略了部署项目的操作，因为我就是纯属想了解一下怎么自动化CI</p>
-<p>然后runtest-ci也很简单</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line">sudo apt-get install tcl</span><br><span class="line">chmod +x runtest runtest-cluster runtest-sentinel</span><br><span class="line">make test</span><br></pre></td></tr></table></figure>
-<p>tcl是redis跑test需要的一个库，网上查了一下，似乎是一个tcl语言的解析器，还不太了解</p>
-<p>让我比较疑惑的一个问题是，build失败和成功是怎么判定的呢？我的想法是应该是根据跑的shell脚本的返回来判定。如果脚本执行返回0，就是build succ。如果返回其他值，就是build error</p>
-<p>还有刚开始用的时候，因为的测试脚本跑之前需要安装一个tcl这个库，由于我不知道默认服务器的哪个linux发行版，导致我不知道应该用apt-get还是yum或者其他的软件管理包。我是构建了一次，查看了log后才发现系统是ubuntu，可以用apt-get的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ export TRAVIS_COMPILER=gcc</span><br><span class="line">$ export CC=gcc</span><br><span class="line">$ export CC_FOR_BUILD=gcc</span><br><span class="line">$ gcc --version</span><br><span class="line">gcc (Ubuntu 4.8.4-2ubuntu1~14.04.3) 4.8.4</span><br><span class="line">Copyright (C) 2013 Free Software Foundation, Inc.</span><br><span class="line">This is free software; see the source for copying conditions.  There is NO</span><br><span class="line">warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</span><br></pre></td></tr></table></figure>
-<p>而且刚开始还因为没有加sudo 导致无法执行apt-get install 命令</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ apt-get install tcl</span><br><span class="line">E: Could not open lock file /var/lib/dpkg/lock - open (13: Permission denied)</span><br><span class="line">E: Unable to lock the administration directory (/var/lib/dpkg/), are you root?</span><br><span class="line">The command &quot;apt-get install tcl&quot; failed and exited with 100 during .</span><br></pre></td></tr></table></figure>
-<p>总结一下：</p>
-<p>travis真是很方便好用的自动化CI工具，只需要配置好.travis.xml文件和关联repo就可以部署好某个repo的CI。最后附上成果图</p>
-<p><a href="https://travis-ci.org/licovery/redis-3.0-annotated" target="_blank" rel="noopener"><img src="https://travis-ci.org/licovery/redis-3.0-annotated.svg?branch=unstable" alt="Build Status"></a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/17/github上面部署CI/" data-id="cjuqmngr300017kajxprt1dj0" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
   
 </article>
-
-
-  
-    <article id="post-my-first-blog" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/04/12/my-first-blog/" class="article-date">
-  <time datetime="2019-04-12T14:17:28.000Z" itemprop="datePublished">2019-04-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/12/my-first-blog/">为什么写博客？</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>互联网上面有太多的资料和资源可以获取，获取信息本身不难，如何有效地利用它们是一件困难的事情。我写这个博客是希望自己能把从网络上学习到的知识，经过自己的理解，用自己的逻辑思维方式再次表达出来，同时写作本身又是加深知识理解的一种方式。</p>
-<p>其实我是有记录笔记的习惯的，一般是用印象笔记来记录下工作或者学习上的一些知识点。但是太过于零碎，希望可以通过写博文的方式，把那些零碎的知识串联起来，形成一个相应的知识体系。</p>
-<p>我是一个十分讨厌写作的人，我自认自己写作能力极差，但是我还是决定努力用自己有限的能力把博文写出来，也不是为了给谁看，就是想通过写作来总结一些知识和信息。</p>
-<p>世界上有太多的未知值得我们去探索，希望自己能永远保持对知识的热忱！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/12/my-first-blog/" data-id="cjuqmngrr00037kajiuimyuym" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/04/12/hello-world/" class="article-date">
-  <time datetime="2019-04-12T14:14:07.680Z" itemprop="datePublished">2019-04-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/12/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/12/hello-world/" data-id="cjuqmngrh00027kaj9wwm644h" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
 
 </section>
         
