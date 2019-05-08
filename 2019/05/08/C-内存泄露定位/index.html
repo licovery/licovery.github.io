@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>C 内存泄露定位 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="内存泄露是我认为在C或C++项目上最难处理的一个bug，由于没有明显的现象，可能要到某一天，服务器内存耗尽后，申请不到新的内存，程序报错才能发现程序有内存泄露的现象。如果没有足够的监控或者维测的统计，很难发现内存泄露的原因。 什么是内存泄露首先并不是说程序运行中有没释放的内存就是内存泄露。因为程序本身逻辑的运行，就需要一些内存用于记录信息。程序的运行，或多或少地会从堆中申请内存，但是一定保证，这个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C 内存泄露定位">
+<meta property="og:url" content="http://yoursite.com/2019/05/08/C-内存泄露定位/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="内存泄露是我认为在C或C++项目上最难处理的一个bug，由于没有明显的现象，可能要到某一天，服务器内存耗尽后，申请不到新的内存，程序报错才能发现程序有内存泄露的现象。如果没有足够的监控或者维测的统计，很难发现内存泄露的原因。 什么是内存泄露首先并不是说程序运行中有没释放的内存就是内存泄露。因为程序本身逻辑的运行，就需要一些内存用于记录信息。程序的运行，或多或少地会从堆中申请内存，但是一定保证，这个">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-05-08T14:15:50.529Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C 内存泄露定位">
+<meta name="twitter:description" content="内存泄露是我认为在C或C++项目上最难处理的一个bug，由于没有明显的现象，可能要到某一天，服务器内存耗尽后，申请不到新的内存，程序报错才能发现程序有内存泄露的现象。如果没有足够的监控或者维测的统计，很难发现内存泄露的原因。 什么是内存泄露首先并不是说程序运行中有没释放的内存就是内存泄露。因为程序本身逻辑的运行，就需要一些内存用于记录信息。程序的运行，或多或少地会从堆中申请内存，但是一定保证，这个">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-C-内存泄露定位" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/05/08/C-内存泄露定位/" class="article-date">
+  <time datetime="2019-05-08T13:32:03.000Z" itemprop="datePublished">2019-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C 内存泄露定位
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>内存泄露是我认为在C或C++项目上最难处理的一个bug，由于没有明显的现象，可能要到某一天，服务器内存耗尽后，申请不到新的内存，程序报错才能发现程序有内存泄露的现象。如果没有足够的监控或者维测的统计，很难发现内存泄露的原因。</p>
+<h2 id="什么是内存泄露"><a href="#什么是内存泄露" class="headerlink" title="什么是内存泄露"></a>什么是内存泄露</h2><p>首先并不是说程序运行中有没释放的内存就是内存泄露。因为程序本身逻辑的运行，就需要一些内存用于记录信息。程序的运行，或多或少地会从堆中申请内存，但是一定保证，这个内存，还可以释放，还回去给操作系统。假如一个服务器程序为一个客户端提供服务时，需要申请一定的内存，这是程序本身的逻辑决定的。但当这个客户端完成服务，断开连接后，刚刚申请的那些内存一定要保证全部释放。简单的说，就是申请的内存，要能还回去。</p>
+<h2 id="为什么出现内存泄露"><a href="#为什么出现内存泄露" class="headerlink" title="为什么出现内存泄露"></a>为什么出现内存泄露</h2><p>C或C++中，动态申请的内存，例如malloc或new申请处理的内存，但是没有释放，也没有记录下指向申请的那片内存的指针，最后无法释放这片内存。举个简单的例子</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">GetMemory</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> *p = (<span class="keyword">char</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * <span class="number">100</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的函数从堆中申请了100个字节的内存，p是指向这片内存的指针。但是函数没有把p当成返回值提供给调用函数。GetMemory函数执行完后，p的值就不得而知了，既然指向内存的指针没了。那么想释放内存就无从下手了。只有程序没有结束，申请的这片内存就没法归还给操作系统。内存泄露一次两次不会有很大的影响，但是如果跑的是服务器的程序，日积月累，肯定会把内存耗尽，最终无法正确提供服务。</p>
+<h1 id="定位思路"><a href="#定位思路" class="headerlink" title="定位思路"></a>定位思路</h1><p>明白为什么会内存泄露后，肯定首先瞄准的目标是申请内存的地方。你先要知道是哪里申请的内存。什么函数，函数里面的哪一行，申请的多大的内存。对于大的项目，申请内存的地方到处都是，直接走查代码就跟大海捞针一样，不科学。</p>
+<p>首先我们需要做一个内存监控模块。简单来说就是一个hash表的结构。每次申请内存生成一个hash结点，插入到hash表中去。释放这片的内存的时候，从hash表中移除。如果程序运行过程中，这个hash表变得越来越大，你就要怀疑程序是不是有内存泄露的现象。</p>
+<p>怎么设计这个hash表呢，最简单的方式就是把申请内存的地址addr作为hash表的key，每次申请内存的地址可以作为唯一标识这块内存的key，value的话看你想记录多少信息了，简单的可以记录申请内存的函数名，行号，申请的内存大小等等。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">__FUNCTION__  __LINE__</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> sturct </span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">void</span> *addr</span><br><span class="line">&#125;Key;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> sturct </span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">char</span> funcName[<span class="number">64</span>];</span><br><span class="line">	<span class="keyword">int</span> line;</span><br><span class="line">	<span class="keyword">int</span> size;</span><br><span class="line">&#125;Value;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">HashNode</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    Key k;</span><br><span class="line">    Value v</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你只需要实现这个hash表的接口，例如插入，删除，查找等接口。就可以实现一个简单的内存统计模块了。</p>
+<p>其实不需要一定是hash表的数据结构，只要是方便查找的结构就可以了。可以底层用红黑树，平衡树什么跳跃表等等来实现。只要是一种查找速度快的数据结构即可。C++中可以直接用map这种数据结构。C语言就只能直接写了，苦逼啊。。。</p>
+<p>这个内存监控的模块只能帮你发现泄露的内存是哪里申请的，具体为什么会泄露也只能自己看代码，开调试工具调试了。</p>
+<p>似乎也有一些内存泄露定位的工具valgrind，但是由于我工作上的业务代码是跑在特定的嵌入式平台上的，根本跑不了这些东西，所有东西都要自己手写去实现，太痛苦了，真的羡慕那些开发的程序跑在X86上面程序员，有太多方便的工具了。</p>
+<h2 id="发现的一些内存泄露的bug"><a href="#发现的一些内存泄露的bug" class="headerlink" title="发现的一些内存泄露的bug"></a>发现的一些内存泄露的bug</h2><ol>
+<li>申请的内存都要插入某个释放的队列保存起来的，但是插入释放队列是有条件。满足一定条件才能插入队列。但是原来的代码中对不满足插入队列的内存没有释放，导致内存泄露</li>
+<li>多核程序，核间共享内存，释放（核A）和申请（核B）不在一个核上跑。有一个很大的数组，数组记录着要释放的内存。核A for循环逐个释放数组中内存，同时核B又申请内存，并记录在数组上。核A遍历完数组后，又把数组都释放了。导致核B申请的内存泄露。造成这种问题的原因还是因为多核之间处理没有加锁。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/05/08/C-内存泄露定位/" data-id="cjvfb2s510001v0ajvlq2lgfi" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/04/21/内存申请与释放/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">内存申请，初始化与释放</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/08/C-内存泄露定位/">C 内存泄露定位</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/21/内存申请与释放/">内存申请，初始化与释放</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/github上面部署CI/">为某个github的项目部署CI</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/12/my-first-blog/">为什么写博客？</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/12/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
