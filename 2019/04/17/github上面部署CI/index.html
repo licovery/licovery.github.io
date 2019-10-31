@@ -5,23 +5,23 @@
   
 
   
-  <title>为某个github的项目部署CI | Hexo</title>
+  <title>为某个github的项目部署CI | Neo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
 <meta property="og:type" content="article">
 <meta property="og:title" content="为某个github的项目部署CI">
 <meta property="og:url" content="http://yoursite.com/2019/04/17/github上面部署CI/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="Neo">
 <meta property="og:description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://travis-ci.org/licovery/redis-3.0-annotated.svg?branch=unstable">
-<meta property="og:updated_time" content="2019-04-17T15:37:05.247Z">
+<meta property="og:updated_time" content="2019-10-31T12:34:41.922Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="为某个github的项目部署CI">
 <meta name="twitter:description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
 <meta name="twitter:image" content="https://travis-ci.org/licovery/redis-3.0-annotated.svg?branch=unstable">
   
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="Neo" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -40,7 +40,7 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
+        <a href="/" id="logo">Neo</a>
       </h1>
       
     </div>
@@ -91,13 +91,13 @@
         <p>在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。</p>
 <p>个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到git上面的每一次commit，更容易定位问题和提升项目质量。</p>
 <p>在某国外搜索引擎中了解到了<a href="https://travis-ci.org/" target="_blank" rel="noopener">https://travis-ci.org</a>，可以给github上的公开repo部署CI，教程网上一搜就一大堆，就不具体说了，说说遇到的坑和学习到的东西。</p>
-<p>首先travis是通过一个.travis.yml文件来自动化构建的。yml似乎是一种配置文件的格式，应该跟json差不多，在官网上看看语法就开始用了。我的项目很简单，因为我要跑CI的repo是fork的Redis，所以已经写好了测试的脚本。我只需要把构建的流程走一下就好了。</p>
+<p>首先travis是通过一个<code>.travis.yml</code>文件来自动化构建的。<code>yml</code>似乎是一种配置文件的格式，应该跟<code>json</code>差不多，在官网上看看语法就开始用了。我的项目很简单，因为我要跑CI的repo是fork的Redis，所以已经写好了测试的脚本。我只需要把构建的流程走一下就好了。</p>
 <p>官网的说法是，只要你把正确的.travis.yml放在repo的根目录下，并且在travis网站，用github账户登录并且激活这个仓库的构建。你以后每次push代码到仓库上，就能自动触发一次build</p>
 <p>最后配置的.travis.xml差不多长这样：</p>
 <figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">language:</span> <span class="string">c</span></span><br><span class="line"><span class="attr">notifications:</span>     </span><br><span class="line"><span class="attr">  email:</span> <span class="literal">false</span></span><br><span class="line"><span class="string">sudo</span> <span class="string">:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">before_install:</span> <span class="string">chmod</span> <span class="string">+x</span> <span class="string">runtest-ci</span></span><br><span class="line"><span class="string">script</span> <span class="string">:</span> <span class="string">./runtest-ci</span></span><br></pre></td></tr></table></figure>
-<p>意思是说项目用的C语言，每次build不需要邮件通知。使用root权限，给runtest-ci这个脚本执行权限，最后直接执行测试脚本。我这里面省略了部署项目的操作，因为我就是纯属想了解一下怎么自动化CI</p>
-<p>然后runtest-ci也很简单</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line">sudo apt-get install tcl</span><br><span class="line">chmod +x runtest runtest-cluster runtest-sentinel</span><br><span class="line">make test</span><br></pre></td></tr></table></figure>
+<p>意思是说项目用的C语言，每次build不需要邮件通知。使用root权限，给<code>runtest-ci</code>这个脚本执行权限，最后直接执行测试脚本。我这里面省略了部署项目的操作，因为我就是纯属想了解一下怎么自动化CI</p>
+<p>然后<code>runtest-ci</code>也很简单</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/sh</span></span><br><span class="line">sudo apt-get install tcl</span><br><span class="line">chmod +x runtest runtest-cluster runtest-sentinel</span><br><span class="line">make test</span><br></pre></td></tr></table></figure>
 <p>tcl是redis跑test需要的一个库，网上查了一下，似乎是一个tcl语言的解析器，还不太了解</p>
 <p>让我比较疑惑的一个问题是，build失败和成功是怎么判定的呢？我的想法是应该是根据跑的shell脚本的返回来判定。如果脚本执行返回0，就是build succ。如果返回其他值，就是build error</p>
 <p>还有刚开始用的时候，因为的测试脚本跑之前需要安装一个tcl这个库，由于我不知道默认服务器的哪个linux发行版，导致我不知道应该用apt-get还是yum或者其他的软件管理包。我是构建了一次，查看了log后才发现系统是ubuntu，可以用apt-get的。</p>
@@ -111,7 +111,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/17/github上面部署CI/" data-id="ck233qpvn0002msajk4izjxw9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/17/github上面部署CI/" data-id="ck2er46oa0004isajgs6sukvf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -200,7 +200,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2019 John Doe<br>
+      &copy; 2019 Neo Li<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
