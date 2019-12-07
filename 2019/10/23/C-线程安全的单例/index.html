@@ -8,13 +8,14 @@
   <title>C++线程安全的单例模式 | Neo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="线程安全多线程并行执行的程序中，对共享数据的访问或修改可能由于执行顺序的不确定，导致运行结果与代码设计者的原意相违背。为了保证代码原有的逻辑，在多线程的情况下可能需要用到一些同步或互斥的操作来保证线程安全。人的思考方式是单线程的，所以有时候看着很合理的代码逻辑，在多线程环境却出bug。 单例模式最简单的设计模式之一，它的含义是这个类只能有唯一的对象实例。一般的单例对外的接口如下 123456789">
+<meta name="keywords" content="多线程多进程">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++线程安全的单例模式">
 <meta property="og:url" content="http://yoursite.com/2019/10/23/C-线程安全的单例/index.html">
 <meta property="og:site_name" content="Neo">
 <meta property="og:description" content="线程安全多线程并行执行的程序中，对共享数据的访问或修改可能由于执行顺序的不确定，导致运行结果与代码设计者的原意相违背。为了保证代码原有的逻辑，在多线程的情况下可能需要用到一些同步或互斥的操作来保证线程安全。人的思考方式是单线程的，所以有时候看着很合理的代码逻辑，在多线程环境却出bug。 单例模式最简单的设计模式之一，它的含义是这个类只能有唯一的对象实例。一般的单例对外的接口如下 123456789">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-10-31T12:33:08.275Z">
+<meta property="og:updated_time" content="2019-12-07T06:57:23.349Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++线程安全的单例模式">
 <meta name="twitter:description" content="线程安全多线程并行执行的程序中，对共享数据的访问或修改可能由于执行顺序的不确定，导致运行结果与代码设计者的原意相违背。为了保证代码原有的逻辑，在多线程的情况下可能需要用到一些同步或互斥的操作来保证线程安全。人的思考方式是单线程的，所以有时候看着很合理的代码逻辑，在多线程环境却出bug。 单例模式最简单的设计模式之一，它的含义是这个类只能有唯一的对象实例。一般的单例对外的接口如下 123456789">
@@ -127,14 +128,25 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/10/23/C-线程安全的单例/" data-id="ck2er46o30001isajzm9qr4hi" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/10/23/C-线程安全的单例/" data-id="ck3ujzyyz0003f4ajy24ud9hk" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程多进程/">多线程多进程</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
+  
+    <a href="/2019/12/07/Linux-Unix-信号处理signal-函数/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Linux/Unix 信号处理signal()函数的坑——为什么僵尸进程总是清理不掉？
+        
+      </div>
+    </a>
   
   
     <a href="/2019/05/08/C-内存泄露定位/" id="article-nav-older" class="article-nav-link-wrap">
@@ -155,15 +167,29 @@
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI-持续集成/">CI(持续集成)</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux服务器编程/">Linux服务器编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/内存管理/">内存管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程多进程/">多线程多进程</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/CI-持续集成/" style="font-size: 10px;">CI(持续集成)</a> <a href="/tags/Linux服务器编程/" style="font-size: 10px;">Linux服务器编程</a> <a href="/tags/内存管理/" style="font-size: 20px;">内存管理</a> <a href="/tags/多线程多进程/" style="font-size: 10px;">多线程多进程</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
     </div>
   </div>
 
@@ -174,6 +200,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/12/07/Linux-Unix-信号处理signal-函数/">Linux/Unix 信号处理signal()函数的坑——为什么僵尸进程总是清理不掉？</a>
+          </li>
         
           <li>
             <a href="/2019/10/23/C-线程安全的单例/">C++线程安全的单例模式</a>
@@ -189,10 +219,6 @@
         
           <li>
             <a href="/2019/04/17/github上面部署CI/">为某个github的项目部署CI</a>
-          </li>
-        
-          <li>
-            <a href="/2019/04/12/my-first-blog/">为什么写博客？</a>
           </li>
         
       </ul>

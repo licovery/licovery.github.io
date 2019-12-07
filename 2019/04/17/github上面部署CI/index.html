@@ -8,6 +8,7 @@
   <title>为某个github的项目部署CI | Neo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
+<meta name="keywords" content="CI(持续集成)">
 <meta property="og:type" content="article">
 <meta property="og:title" content="为某个github的项目部署CI">
 <meta property="og:url" content="http://yoursite.com/2019/04/17/github上面部署CI/index.html">
@@ -15,7 +16,7 @@
 <meta property="og:description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://travis-ci.org/licovery/redis-3.0-annotated.svg?branch=unstable">
-<meta property="og:updated_time" content="2019-10-31T12:34:41.922Z">
+<meta property="og:updated_time" content="2019-12-07T06:56:44.579Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="为某个github的项目部署CI">
 <meta name="twitter:description" content="在商业公司的项目管理里，持续集成（Continuous Integration，简称CI）是必须的一环。刚开始工作的时候，也不太懂持续集成是什么意思，慢慢接触到项目，也有了一定的理解。简单来说CI就持续编译项目源码，进行测试，并部署。每次项目组的成员提交的代码，都要走一遍编译，测试，部署的流程。而且这个过程全自动化完成。 个人感觉CI还是有很大的好处的，可以及时的暴露问题，可以把代码的测试细化到g">
@@ -97,7 +98,7 @@
 <figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">language:</span> <span class="string">c</span></span><br><span class="line"><span class="attr">notifications:</span>     </span><br><span class="line"><span class="attr">  email:</span> <span class="literal">false</span></span><br><span class="line"><span class="string">sudo</span> <span class="string">:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">before_install:</span> <span class="string">chmod</span> <span class="string">+x</span> <span class="string">runtest-ci</span></span><br><span class="line"><span class="string">script</span> <span class="string">:</span> <span class="string">./runtest-ci</span></span><br></pre></td></tr></table></figure>
 <p>意思是说项目用的C语言，每次build不需要邮件通知。使用root权限，给<code>runtest-ci</code>这个脚本执行权限，最后直接执行测试脚本。我这里面省略了部署项目的操作，因为我就是纯属想了解一下怎么自动化CI</p>
 <p>然后<code>runtest-ci</code>也很简单</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/sh</span></span><br><span class="line">sudo apt-get install tcl</span><br><span class="line">chmod +x runtest runtest-cluster runtest-sentinel</span><br><span class="line">make test</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line">sudo apt-get install tcl</span><br><span class="line">chmod +x runtest runtest-cluster runtest-sentinel</span><br><span class="line">make test</span><br></pre></td></tr></table></figure>
 <p>tcl是redis跑test需要的一个库，网上查了一下，似乎是一个tcl语言的解析器，还不太了解</p>
 <p>让我比较疑惑的一个问题是，build失败和成功是怎么判定的呢？我的想法是应该是根据跑的shell脚本的返回来判定。如果脚本执行返回0，就是build succ。如果返回其他值，就是build error</p>
 <p>还有刚开始用的时候，因为的测试脚本跑之前需要安装一个tcl这个库，由于我不知道默认服务器的哪个linux发行版，导致我不知道应该用apt-get还是yum或者其他的软件管理包。我是构建了一次，查看了log后才发现系统是ubuntu，可以用apt-get的。</p>
@@ -111,9 +112,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/17/github上面部署CI/" data-id="ck2er46oa0004isajgs6sukvf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/17/github上面部署CI/" data-id="ck3ujzyz10004f4ajhh7w77zr" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CI-持续集成/">CI(持续集成)</a></li></ul>
+
     </footer>
   </div>
   
@@ -148,15 +151,29 @@
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CI-持续集成/">CI(持续集成)</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux服务器编程/">Linux服务器编程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/内存管理/">内存管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程多进程/">多线程多进程</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/CI-持续集成/" style="font-size: 10px;">CI(持续集成)</a> <a href="/tags/Linux服务器编程/" style="font-size: 10px;">Linux服务器编程</a> <a href="/tags/内存管理/" style="font-size: 20px;">内存管理</a> <a href="/tags/多线程多进程/" style="font-size: 10px;">多线程多进程</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
     </div>
   </div>
 
@@ -167,6 +184,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/12/07/Linux-Unix-信号处理signal-函数/">Linux/Unix 信号处理signal()函数的坑——为什么僵尸进程总是清理不掉？</a>
+          </li>
         
           <li>
             <a href="/2019/10/23/C-线程安全的单例/">C++线程安全的单例模式</a>
@@ -182,10 +203,6 @@
         
           <li>
             <a href="/2019/04/17/github上面部署CI/">为某个github的项目部署CI</a>
-          </li>
-        
-          <li>
-            <a href="/2019/04/12/my-first-blog/">为什么写博客？</a>
           </li>
         
       </ul>
