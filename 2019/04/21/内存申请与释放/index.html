@@ -5,22 +5,22 @@
   
 
   
-  <title>内存申请，初始化与释放 | Neo</title>
+  <title>内存申请，初始化与释放 | Neo 的 blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="在实现业务代码的时候，总不可避免地要动态申请内存。在C语言中，没有自动回收内存的机制，所以必须手动释放内存。如果没有正确释放内存，就会出现内存泄露。如果是在服务器端的程序出现内存泄露，那必定会导致服务不稳定，长期运行总会耗尽内存而导致无法新申请出内存，影响业务。 在C语言中，申请内存调用的是alloc类函数（之所以说类，是因为有malloc calloc realloc三种），释放内存使用free">
 <meta name="keywords" content="内存管理">
 <meta property="og:type" content="article">
 <meta property="og:title" content="内存申请，初始化与释放">
 <meta property="og:url" content="http://yoursite.com/2019/04/21/内存申请与释放/index.html">
-<meta property="og:site_name" content="Neo">
+<meta property="og:site_name" content="Neo 的 blog">
 <meta property="og:description" content="在实现业务代码的时候，总不可避免地要动态申请内存。在C语言中，没有自动回收内存的机制，所以必须手动释放内存。如果没有正确释放内存，就会出现内存泄露。如果是在服务器端的程序出现内存泄露，那必定会导致服务不稳定，长期运行总会耗尽内存而导致无法新申请出内存，影响业务。 在C语言中，申请内存调用的是alloc类函数（之所以说类，是因为有malloc calloc realloc三种），释放内存使用free">
-<meta property="og:locale" content="default">
+<meta property="og:locale" content="zh-Hans">
 <meta property="og:updated_time" content="2019-12-07T06:58:43.655Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="内存申请，初始化与释放">
 <meta name="twitter:description" content="在实现业务代码的时候，总不可避免地要动态申请内存。在C语言中，没有自动回收内存的机制，所以必须手动释放内存。如果没有正确释放内存，就会出现内存泄露。如果是在服务器端的程序出现内存泄露，那必定会导致服务不稳定，长期运行总会耗尽内存而导致无法新申请出内存，影响业务。 在C语言中，申请内存调用的是alloc类函数（之所以说类，是因为有malloc calloc realloc三种），释放内存使用free">
   
-    <link rel="alternate" href="/atom.xml" title="Neo" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="Neo 的 blog" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -39,7 +39,7 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/" id="logo">Neo</a>
+        <a href="/" id="logo">Neo 的 blog</a>
       </h1>
       
     </div>
@@ -108,7 +108,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/21/内存申请与释放/" data-id="ck3ujzyz30006f4aje4k25aux" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/21/内存申请与释放/" data-id="ck54323yc000b1kajostvis9b" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/内存管理/">内存管理</a></li></ul>
@@ -169,7 +169,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
     </div>
   </div>
 
@@ -182,6 +182,14 @@
       <ul>
         
           <li>
+            <a href="/2020/01/07/libevent入门/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/02/谈谈Shell/">谈谈Shell</a>
+          </li>
+        
+          <li>
             <a href="/2019/12/07/Linux-Unix-信号处理signal-函数/">Linux/Unix 信号处理signal()函数的坑——为什么僵尸进程总是清理不掉？</a>
           </li>
         
@@ -191,14 +199,6 @@
         
           <li>
             <a href="/2019/05/08/C-内存泄露定位/">C 内存泄露定位</a>
-          </li>
-        
-          <li>
-            <a href="/2019/04/21/内存申请与释放/">内存申请，初始化与释放</a>
-          </li>
-        
-          <li>
-            <a href="/2019/04/17/github上面部署CI/">为某个github的项目部署CI</a>
           </li>
         
       </ul>
@@ -213,7 +213,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2019 Neo Li<br>
+      &copy; 2020 Neo Li<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

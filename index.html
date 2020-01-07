@@ -5,17 +5,17 @@
   
 
   
-  <title>Neo</title>
+  <title>Neo 的 blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta property="og:type" content="website">
-<meta property="og:title" content="Neo">
+<meta property="og:title" content="Neo 的 blog">
 <meta property="og:url" content="http://yoursite.com/index.html">
-<meta property="og:site_name" content="Neo">
-<meta property="og:locale" content="default">
+<meta property="og:site_name" content="Neo 的 blog">
+<meta property="og:locale" content="zh-Hans">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Neo">
+<meta name="twitter:title" content="Neo 的 blog">
   
-    <link rel="alternate" href="/atom.xml" title="Neo" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="Neo 的 blog" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -34,7 +34,7 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/" id="logo">Neo</a>
+        <a href="/" id="logo">Neo 的 blog</a>
       </h1>
       
     </div>
@@ -61,6 +61,194 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-libevent入门" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/07/libevent入门/" class="article-date">
+  <time datetime="2020-01-07T14:33:56.716Z" itemprop="datePublished">2020-01-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>title: libevent入门<br>date: 2020-01-07 22:33:56<br>tags:网络编程 IO模型 高性能服务器</p>
+<h2 id="libevent简介"><a href="#libevent简介" class="headerlink" title="libevent简介"></a>libevent简介</h2><p><a href="https://libevent.org" target="_blank" rel="noopener">libevent</a>是一个开源的高性能I/O框架，是基于Reactor模式实现的。什么是Reactior模式，简单地说，Reactor一般包括以下几个组件，<code>句柄（Handle）</code>，<code>事件多路分发器（EventDemultiplexer）</code>，<code>事件处理器（EventHandler)</code>。</p>
+<p>用一个简单的unix socket编程的例子来说明：</p>
+<ul>
+<li>句柄就是文件描述符fd，可以对其进行一些读写的操作。</li>
+<li>事件就是某个文件描述符，可读，可写，或者出现错误等事件。</li>
+<li>事件多路分发器，就是I/O多路复用（select, poll, epoll），再加上一个分发的逻辑。</li>
+<li>事件处理器可以理解成一个回调函数，这个回调函数决定了出现I/O的时候应该做什么，也就是具体的业务。把事件处理器注册到事件多路分发器中，这样就会形成某个事件和某个事件处理器的之间的一个映射。</li>
+</ul>
+<p>libevent中事件分为三种：</p>
+<ul>
+<li>I/O事件</li>
+<li>信号事件</li>
+<li>定时器事件</li>
+</ul>
+<p>libevent的核心是事件循环，根据发生的事件，调用对应的事件处理器。</p>
+<h2 id="libevent安装"><a href="#libevent安装" class="headerlink" title="libevent安装"></a>libevent安装</h2><p>libevent是跨平台的，本人使用的是linux，只介绍linux下安装的方法</p>
+<ol>
+<li>使用包管理工具apt或者yum等来下载，下载的版本由软件仓库提供的版本决定</li>
+<li>源码编译，<a href="https://github.com/libevent/libevent" target="_blank" rel="noopener">github源码</a>，按readme操作即可</li>
+</ol>
+<p>头文件包含：libevent所使用的头文件均在event2目录下</p>
+<p><code>#include &lt;event2/event.h&gt;</code><br><code>#include &lt;event2/xxx.h&gt;</code></p>
+<p>编译时需要加上 <code>-levent</code> 参数链接libevent库</p>
+<h2 id="libevent-API"><a href="#libevent-API" class="headerlink" title="libevent API"></a>libevent API</h2><p>详细请参数官方<a href="https://libevent.org/doc/files.html" target="_blank" rel="noopener">API文档</a>，这里简单介绍几个常用Data Structures和API</p>
+<table>
+<thead>
+<tr>
+<th>数据结构</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>struct event</code></td>
+<td>事件处理器，可以代表IO事件，信号事件，或者定时器事件</td>
+</tr>
+<tr>
+<td><code>struct event_base</code></td>
+<td>Reactor实例，也可以理解为事件多路分发器，每个<code>struct event</code>都要加入到<code>struct event_base</code>才能生效</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>event_base_new()</code></td>
+<td>创建event_base</td>
+</tr>
+<tr>
+<td><code>event_base_free()</code></td>
+<td>销毁event_base，释放内存</td>
+</tr>
+<tr>
+<td><code>event_new()</code></td>
+<td>创建一个事件，可以是IO、信号、定时器事件</td>
+</tr>
+<tr>
+<td><code>event_free()</code></td>
+<td>销毁一个事件，释放内存</td>
+</tr>
+<tr>
+<td><code>event_add()</code></td>
+<td>把一个event加入到event_base的事件循环中</td>
+</tr>
+<tr>
+<td><code>event_del()</code></td>
+<td>把event从event_base的事件循环中移除</td>
+</tr>
+<tr>
+<td><code>event_base_dispatch()</code> or <code>event_base_loop()</code></td>
+<td>进入事件循环，一直运行直到没有待定的事件</td>
+</tr>
+<tr>
+<td><code>event_base_loopbreak()</code> or <code>event_base_loopexit()</code></td>
+<td>退出事件循环</td>
+</tr>
+<tr>
+<td><code>typedef void(*event_callback_fn)(evutil_socket_t, short, void *)</code></td>
+<td>指明回调函数的类型，第一个参数是fd，第二个参数是event类型，第三个参数是在注册的时候填入</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>事件类型</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EV_TIMEOUT</td>
+<td>定时器超时</td>
+</tr>
+<tr>
+<td>EV_READ</td>
+<td>fd可读</td>
+</tr>
+<tr>
+<td>EV_WRITE</td>
+<td>fd可写</td>
+</tr>
+<tr>
+<td>EV_SIGNAL</td>
+<td>信号产生</td>
+</tr>
+<tr>
+<td>EV_CLOSE</td>
+<td>fd关闭</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Demo"><a href="#Demo" class="headerlink" title="Demo"></a>Demo</h2><p>实现一个简单echo服务器，并且捕获SIGINT信号，设定一个1秒的定时器。同时处理IO、信号、定时器三种事件</p>
+<p>简单起见，不考虑错误处理</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;event2/event.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;event2/listener.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_BUF_SIZE 4096</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_LISTEN_CON 16</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ReadCallBack</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">short</span> event, <span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event</span> *<span class="title">readEvent</span> = (<span class="title">struct</span> <span class="title">event</span> *)<span class="title">arg</span>;</span></span><br><span class="line">    <span class="keyword">if</span> (event &amp; EV_CLOSED)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"clientFd:%d close\n"</span>, fd);</span><br><span class="line">        event_del(readEvent); </span><br><span class="line">        event_free(readEvent);</span><br><span class="line">        close(fd);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (event &amp; EV_READ)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">char</span> buf[MAX_BUF_SIZE];</span><br><span class="line">        <span class="keyword">int</span> n = recv(fd, buf, MAX_BUF_SIZE, <span class="number">0</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"recv %d bytes from clientFd:%d\n"</span>, n, fd);</span><br><span class="line">        write(fd, buf, n);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AcceptCallBack</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">short</span> event, <span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event_base</span> *<span class="title">base</span> = (<span class="title">struct</span> <span class="title">event_base</span> *)<span class="title">arg</span>;</span></span><br><span class="line">    <span class="keyword">int</span> connFd = accept(fd, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">// 与客户端连接的fd，加入事件循环</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event</span> *<span class="title">readEvent</span> = <span class="title">event_new</span>(<span class="title">base</span>, <span class="title">connFd</span>, <span class="title">EV_READ</span>|<span class="title">EV_CLOSED</span>|<span class="title">EV_PERSIST</span>, <span class="title">ReadCallBack</span>, <span class="title">event_self_cbarg</span>());</span></span><br><span class="line">    event_add(readEvent, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 信号SIGINT回调函数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SigIntCallback</span><span class="params">(<span class="keyword">int</span> signo, <span class="keyword">short</span> event, <span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event_base</span> *<span class="title">base</span> = (<span class="title">struct</span> <span class="title">event_base</span> *)<span class="title">arg</span>;</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"server exit because SIGINT\n"</span>);</span><br><span class="line">    event_base_loopexit(base, <span class="literal">NULL</span>); <span class="comment">// 退出事件循环</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tv</span> = &#123;</span><span class="number">1</span>, <span class="number">0</span>&#125;;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">TimeoutCallBack</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">short</span> event, <span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event</span> *<span class="title">timerEvent</span> = (<span class="title">struct</span> <span class="title">event</span> *)<span class="title">arg</span>;</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%ld\n"</span>, time(<span class="literal">NULL</span>));</span><br><span class="line">    event_add(timerEvent, &amp;tv); <span class="comment">// 再次把定时事件加入事件循环</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 创建监听fd</span></span><br><span class="line">    <span class="keyword">int</span> listenFd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置socket选项</span></span><br><span class="line">    <span class="keyword">int</span> flag = <span class="number">1</span>;</span><br><span class="line">    setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &amp;flag, <span class="keyword">sizeof</span>(flag));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 填入地址端口信息</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serverAddr</span> = &#123;</span><span class="number">0</span>&#125;;</span><br><span class="line">    serverAddr.sin_family = AF_INET;</span><br><span class="line">    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">    serverAddr.sin_port = htons(<span class="number">8888</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// fd绑定地址端口信息</span></span><br><span class="line">    bind(listenFd, (struct sockaddr *) &amp;serverAddr, <span class="keyword">sizeof</span>(serverAddr));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 监听fd</span></span><br><span class="line">    listen(listenFd, MAX_LISTEN_CON);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建Reactor实例，事件循环实例</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event_base</span> *<span class="title">base</span> = <span class="title">event_base_new</span>();</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建并注册IO事件处理器           </span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event</span> *<span class="title">listenEvent</span> = <span class="title">event_new</span>(<span class="title">base</span>, <span class="title">listenFd</span>, <span class="title">EV_READ</span>|<span class="title">EV_PERSIST</span>, <span class="title">AcceptCallBack</span>, <span class="title">base</span>);</span></span><br><span class="line">    event_add(listenEvent, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建并注册信号事件处理器</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event</span> *<span class="title">signalEvent</span> = <span class="title">evsignal_new</span>(<span class="title">base</span>, <span class="title">SIGINT</span>, <span class="title">SigIntCallback</span>, <span class="title">base</span>);</span></span><br><span class="line">    event_add(signalEvent, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建并注册定时器事件处理器</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">event</span> *<span class="title">timerEvent</span> = <span class="title">evtimer_new</span>(<span class="title">base</span>, <span class="title">TimeoutCallBack</span>, <span class="title">event_self_cbarg</span>());</span></span><br><span class="line">    <span class="comment">// event_add(timerEvent, &amp;tv);</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 事件分发循环</span></span><br><span class="line">    event_base_dispatch(base);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放</span></span><br><span class="line">    event_free(listenEvent);</span><br><span class="line">    event_free(signalEvent);</span><br><span class="line">    event_free(timerEvent);</span><br><span class="line">    event_base_free(base);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>官方文档是英文，但是阅读难度不高，建议阅读</p>
+<p><a href="http://www.wangafu.net/~nickm/libevent-book/TOC.html" target="_blank" rel="noopener">http://www.wangafu.net/~nickm/libevent-book/TOC.html</a></p>
+<p><a href="https://libevent.org/doc/" target="_blank" rel="noopener">https://libevent.org/doc/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/07/libevent入门/" data-id="ck54323y000031kaj1mdu1evm" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-谈谈Shell" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/02/谈谈Shell/" class="article-date">
+  <time datetime="2020-01-02T15:59:14.000Z" itemprop="datePublished">2020-01-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/01/02/谈谈Shell/">谈谈Shell</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>待填坑</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/01/02/谈谈Shell/" data-id="ck54323y600081kajm1zimqa9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-Linux-Unix-信号处理signal-函数" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -165,7 +353,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/07/Linux-Unix-信号处理signal-函数/" data-id="ck3ujzyyj0000f4aj9021sov8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/07/Linux-Unix-信号处理signal-函数/" data-id="ck54323ye000c1kaju5q88kwf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux服务器编程/">Linux服务器编程</a></li></ul>
@@ -240,7 +428,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/10/23/C-线程安全的单例/" data-id="ck3ujzyyz0003f4ajy24ud9hk" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/10/23/C-线程安全的单例/" data-id="ck54323w800001kajuq88siwb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程多进程/">多线程多进程</a></li></ul>
@@ -325,7 +513,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/05/08/C-内存泄露定位/" data-id="ck3ujzyz40007f4aj2dyzxyqb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/05/08/C-内存泄露定位/" data-id="ck54323y100041kajniluzwxy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/内存管理/">内存管理</a></li></ul>
@@ -380,7 +568,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/21/内存申请与释放/" data-id="ck3ujzyz30006f4aje4k25aux" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/21/内存申请与释放/" data-id="ck54323yc000b1kajostvis9b" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/内存管理/">内存管理</a></li></ul>
@@ -437,7 +625,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/17/github上面部署CI/" data-id="ck3ujzyz10004f4ajhh7w77zr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/17/github上面部署CI/" data-id="ck54323y500071kajtqohzza0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CI-持续集成/">CI(持续集成)</a></li></ul>
@@ -479,7 +667,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/12/my-first-blog/" data-id="ck3ujzyz20005f4ajprpzea96" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/12/my-first-blog/" data-id="ck54323y7000a1kaj6i85afaw" class="article-share-link">Share</a>
       
       
     </footer>
@@ -524,7 +712,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/12/hello-world/" data-id="ck3ujzyz50008f4aj5c7rg0y2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/12/hello-world/" data-id="ck54323yw000h1kajmpjj4flg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -566,7 +754,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li></ul>
     </div>
   </div>
 
@@ -579,6 +767,14 @@
       <ul>
         
           <li>
+            <a href="/2020/01/07/libevent入门/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/02/谈谈Shell/">谈谈Shell</a>
+          </li>
+        
+          <li>
             <a href="/2019/12/07/Linux-Unix-信号处理signal-函数/">Linux/Unix 信号处理signal()函数的坑——为什么僵尸进程总是清理不掉？</a>
           </li>
         
@@ -588,14 +784,6 @@
         
           <li>
             <a href="/2019/05/08/C-内存泄露定位/">C 内存泄露定位</a>
-          </li>
-        
-          <li>
-            <a href="/2019/04/21/内存申请与释放/">内存申请，初始化与释放</a>
-          </li>
-        
-          <li>
-            <a href="/2019/04/17/github上面部署CI/">为某个github的项目部署CI</a>
           </li>
         
       </ul>
@@ -610,7 +798,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2019 Neo Li<br>
+      &copy; 2020 Neo Li<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
