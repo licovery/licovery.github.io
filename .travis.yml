@@ -1,16 +1,18 @@
 # 指定构建环境是Node.js，当前版本是稳定版
 language: node_js
+# 指定需要sudo权限
+sudo: required
 node_js: stable
-
-# 设置钩子只检测blog-source分支的push变动
-branches:
-  only:
-    - source
 
 # 设置缓存文件
 cache:
   directories:
     - node_modules
+
+# 设置钩子只检测blog-source分支的push变动
+branches:
+  only:
+    - source
 
 #在构建之前安装hexo
 before_install:
