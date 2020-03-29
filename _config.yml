@@ -99,5 +99,5 @@ theme: next
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: https://github.com/licovery/licovery.github.io.git
+  repo: https://github_token@github.com/licovery/licovery.github.io.git
   branch: master
