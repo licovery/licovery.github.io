@@ -90,7 +90,6 @@ travis真是很方便好用的自动化CI工具，只需要配置好.travis.xml�
 同样利用了travis-ci的特性，每次push会触发一次任务。可以在原来github page仓库上新建一个分支`source`，把hexo根目录下的文件全部提交到仓库，并且配置`.travis.xml`文件，触发hexo自动部署到`master`分支上。
 
 ```yaml
-# .travis.xml
 # 指定构建环境是Node.js，当前版本是稳定版
 language: node_js
 # 指定需要sudo权限
@@ -123,25 +122,14 @@ script:
 
 # 设置git提交名，邮箱；替换真实token到_config.yml文件，最后depoy部署
 after_script:
-  - git config user.name "xxx"
-  - git config user.email "xxx@xxx.com"
+  - git config user.name "neoli"
+  - git config user.email "798060965@qq.com"
   # 替换同目录下的_config.yml文件中github_token字符串为travis后台刚才配置的变量，注>意此处sed命令用了双引号。单引号无效！
   - sed -i "s/github_token/${github_token}/g" ./_config.yml
   - hexo deploy
 ```
 
 
-
-```yaml
-# _config.yml
-# Deployment
-## Docs: https://hexo.io/docs/deployment.html
-deploy:
-  type: git
-  repo: https://github_token@github.com/xxx/xxx.github.io.git
-  branch: master
-
-```
 
 这里有个比较麻烦的地方，就是需要travis-ci部署网页，换言之，就是要修改仓库，需要github的仓库权限。这里可以利用github提供的`token`，生成token后要保存好，泄漏了会导致别人可以修改你的仓库。
 
