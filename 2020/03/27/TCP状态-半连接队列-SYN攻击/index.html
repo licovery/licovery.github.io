@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Consolas:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="简介TCP建立连接，发送数据，断开连接。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈TCP状态 半连接队列 SYN攻击">
+<meta property="og:url" content="http://yoursite.com/2020/03/27/TCP%E7%8A%B6%E6%80%81-%E5%8D%8A%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97-SYN%E6%94%BB%E5%87%BB/index.html">
+<meta property="og:site_name" content="Neo 的 blog">
+<meta property="og:description" content="简介TCP建立连接，发送数据，断开连接。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/image-20200327100435256.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/image-20200327100606724.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/image-20200327100629998.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/tcp-sync-queue-and-accept-queue-small-1024x747.jpg">
+<meta property="article:published_time" content="2020-03-27T10:00:53.000Z">
+<meta property="article:modified_time" content="2020-04-02T12:03:35.155Z">
+<meta property="article:author" content="Neo Li">
+<meta property="article:tag" content="TCP">
+<meta property="article:tag" content="三次握手">
+<meta property="article:tag" content="半连接队列">
+<meta property="article:tag" content="SYN攻击">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/image-20200327100435256.png">
+
+<link rel="canonical" href="http://yoursite.com/2020/03/27/TCP%E7%8A%B6%E6%80%81-%E5%8D%8A%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97-SYN%E6%94%BB%E5%87%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>浅谈TCP状态 半连接队列 SYN攻击 | Neo 的 blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Neo 的 blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/27/TCP%E7%8A%B6%E6%80%81-%E5%8D%8A%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97-SYN%E6%94%BB%E5%87%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Neo Li">
+      <meta itemprop="description" content="write something">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Neo 的 blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          浅谈TCP状态 半连接队列 SYN攻击
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-27 10:00:53" itemprop="dateCreated datePublished" datetime="2020-03-27T10:00:53+00:00">2020-03-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-02 12:03:35" itemprop="dateModified" datetime="2020-04-02T12:03:35+00:00">2020-04-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">编程</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>TCP建立连接，发送数据，断开连接。</p>
+<a id="more"></a>
+
+<img src="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/image-20200327100435256.png" style="zoom:70%;" />
+
+
+<h3 id="TCP建立连接是三次握手"><a href="#TCP建立连接是三次握手" class="headerlink" title="TCP建立连接是三次握手"></a>TCP建立连接是三次握手</h3><ol>
+<li>首先客户端发送<code>SYN</code>分节，里面含有随机序列号seq，进入<code>SYN_SEND</code>状态。</li>
+<li>服务器收到<code>SYN</code>分节，进入<code>SYN_RECV</code>状态，并且回复<code>SYN+ACK</code>分节，里面含有随机序列号seq。</li>
+<li>客户端收到<code>SYN+ACK</code>分节，回复服务器<code>ACK</code>分节，进入<code>ESTABLISHED</code>状态。（此时客户端已经建立好连接。可以发送数据。但服务器可能还没有收到ACK，ACK从客户端发送与服务器收到有一个时间差，极端的情况如果此时客户端发送数据，由于网络原因比ACK更快到达服务器，并不会引起RST，服务器忽略该数据，客户端会重传。最后有两种结果，一服务器收到ACK了，连接建立完成，收到重传的数据，二服务器没有收到ACK，TCP连接建立失败）</li>
+<li>服务器收到<code>ACK</code>分节，也进入<code>ESTABLISHED</code>状态，服务器的连接建立完成，至此，整个TCP连接建立完成。</li>
+</ol>
+<h3 id="TCP断开连接是四次挥手"><a href="#TCP断开连接是四次挥手" class="headerlink" title="TCP断开连接是四次挥手"></a>TCP断开连接是四次挥手</h3><p>为什么挥手断开连接需要四次？</p>
+<ul>
+<li>因为TCP是全双工的，主动方断开连接，不再发送数据，不能确保不再接收数据。主动方必须等被动方把要发的数据发完。</li>
+</ul>
+<p>为什么最后的ACK要等两个MSL？（为什么需要TIME_WAIT？）</p>
+<ul>
+<li><p>2MSL确保有足够的时间让被动方收到了ACK或主动方收到了被动方发超时重传的FIN。即，如果被动方没有收到ACK，就会触发被动方重传FIN。</p>
+</li>
+<li><p>TIME_WAIT状态的连接收到重传的FIN后，重传ACK，再等待2MSL时间。确保有足够的时间让“迷途的重复分组”过期丢弃。这只需要1个MSL即可，超过MSL的分组将被丢弃，否则很容易同新连接的数据混在一起。</p>
+</li>
+</ul>
+<h2 id="TCP状态转移图"><a href="#TCP状态转移图" class="headerlink" title="TCP状态转移图"></a>TCP状态转移图</h2><p>关于TCP状态转移，网络上和书籍上（Unix网络编程卷1）已经有很多解析，不再赘述。</p>
+<p><img src="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/image-20200327100606724.png" alt=""></p>
+<p>另外一种形式</p>
+<p><img src="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/image-20200327100629998.png" alt=""></p>
+<h2 id="半连接"><a href="#半连接" class="headerlink" title="半连接"></a>半连接</h2><p>半连接：在三次握手过程中，服务器发送<code>SYN+ACK</code>分节之后，收到客户端的ACK之前的TCP连接称为<code>半连接</code>。此时服务器处于<code>SYN_RECV</code>状态。当收到<code>ACK</code>后，服务器转<code>ESTABLISHED</code>状态，TCP连接变为<code>全连接</code>。</p>
+<p><img src="https://raw.githubusercontent.com/licovery/licovery.github.io/pic/img/tcp-sync-queue-and-accept-queue-small-1024x747.jpg" alt=""></p>
+<p>如上图所示，这里有两个队列：<code>syns queue(半连接队列）</code>；<code>accept queue（全连接队列）</code></p>
+<h3 id="全连接队列"><a href="#全连接队列" class="headerlink" title="全连接队列"></a>全连接队列</h3><p>已经完成三次握手的连接，调用<code>accept()</code>返回一个可用连接。如果全连接队列为空，阻塞IO的情况下下，调用<code>accept()</code>将阻塞，非阻塞阻塞IO情况下，调用<code>accept()</code>将返回失败。</p>
+<h3 id="半连接队列"><a href="#半连接队列" class="headerlink" title="半连接队列"></a>半连接队列</h3><p>在TCP建立连接过程中，服务器维护一个半连接队列，存放半连接。该队列为每个客户端的<code>SYN</code>分节开设一个条目，该条目表明服务器已收到<code>SYN</code>分节，并向客户发出<code>SYN+ACK</code>分节，正在等待客户的<code>ACK</code>分节。这些条目所标识的连接在服务器处于<code>SYN_RECV</code>状态，当服务器收到客户的<code>ACK</code>分节时，删除该条目，服务器进入<code>ESTABLISHED</code>状态，半连接转化为全连接。</p>
+<h3 id="半连接存活时间"><a href="#半连接存活时间" class="headerlink" title="半连接存活时间"></a>半连接存活时间</h3><p>是指半连接队列的条目存活的最长时间，也即服务器从收到<code>SYN</code>包到这个报文失效、连接失效的最长时间，该时间值是所有重传请求包的最长等待时间总和。有时我们也称半连接存活时间为<code>SYN_RECV</code>存活时间。</p>
+<h3 id="SYN-ACK-重传"><a href="#SYN-ACK-重传" class="headerlink" title="SYN+ACK 重传"></a>SYN+ACK 重传</h3><p>服务器发送完<code>SYN+ACK</code>包，服务器处于<code>SYN_RECV</code>状态，如果未收到客户<code>ACK</code>，服务器进行首次重传，等待一段时间仍未收到客户ACK，进行第二次重传，如果重传次数超过系统规定的最大重传次数，系统将该连接信息从半连接队列中删除。注意，每次重传等待的时间不一定相同。　</p>
+<p>一种Linux下的实现：Linux下，默认重试5次，加上第一次最多共发送6次；重试间隔从1s开始翻倍增长（一种指数回退策略，Exponential Backoff），5次的重试时间分别为1s, 2s, 4s, 8s, 16s，第5次发出后还要等待32s才能判断第5次也超时。所以，至多共发送6次，经过1s + 2s + 4s+ 8s+ 16s + 32s = 2^6 -1 = 63s，TCP才会认为SYN超时断开这个连接。</p>
+<h2 id="SYN-Flood攻击"><a href="#SYN-Flood攻击" class="headerlink" title="SYN Flood攻击"></a>SYN Flood攻击</h2><p>可以针对半连接队列发起<code>SYN Flood</code>攻击——给服务器发一个<code>SYN</code>就立即下线，或者填写错误的源端IP地址，在服务器中创建一个半连接。发<code>SYN</code>的速度是很快的，这样攻击者很容易将服务器的SYN队列资源耗尽，使服务器无法处理正常的新连接。</p>
+<h3 id="防御方法"><a href="#防御方法" class="headerlink" title="防御方法"></a>防御方法</h3><p>针对该问题，Linux提供了一个<code>tcp_syncookies</code>参数解决这个问题。当<code>SYN队列</code>满了后，如果收到客户端的<code>SYN</code>分节的建立连接请求，服务器不再把连接放入<code>SYN队列</code>，服务器会通过源地址、端口、目标地址、端口和时间戳等构造一个特别的<code>Sequence Number+ACK</code>发回去，称为<code>SYN Cookie</code>。如果是攻击者则不会有响应，如果是正常连接，服务器则会收到客户端的<code>ACK</code>响应，然后可以通过确认号中减去 1 以便还原向客户端发送的原始 <code>SYN Cookie</code>。至于<code>SYN队列</code>中的连接，则不做处理直至超时关闭。请注意，不要用<code>tcp_syncookies</code>参数来处理正常的大负载连接情况，因为SYN Cookie本质上也破坏了建连接的SYN超时机制，是妥协版的TCP协议。</p>
+<p>对于正常的连接请求，有另外三个参数可供选择：</p>
+<p><code>tcp_synack_retries</code>参数设置SYN超时重试次数</p>
+<p><code>tcp_max_syn_backlog</code>参数设置最大SYN连接数（SYN队列容量）</p>
+<p><code>tcp_abort_on_overflow</code>参数使SYN请求处理不过来的时候拒绝连接</p>
+<p>另外一种防护的思路是使用防火墙限制某些IP</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://monkeysayhi.github.io/2018/03/07/%E6%B5%85%E8%B0%88TCP%EF%BC%881%EF%BC%89%EF%BC%9A%E7%8A%B6%E6%80%81%E6%9C%BA%E4%B8%8E%E9%87%8D%E4%BC%A0%E6%9C%BA%E5%88%B6/" target="_blank" rel="noopener">浅谈TCP（1）：状态机与重传机制</a></p>
+<p><a href="https://blog.csdn.net/yangbodong22011/article/details/60399728" target="_blank" rel="noopener">深入探索 Linux listen() 函数 backlog 的含义</a> </p>
+<p><a href="https://blog.csdn.net/u011080472/article/details/51209130" target="_blank" rel="noopener">TCP半连接与SYN攻击</a>  </p>
+<p><a href="http://jm.taobao.org/2017/05/25/525-1/" target="_blank" rel="noopener">关于TCP 半连接队列和全连接队列</a> </p>
+<p><a href="https://zh.wikipedia.org/zh-cn/SYN_flood" target="_blank" rel="noopener">维基百科 SYN flood</a> </p>
+<p><a href="https://zh.wikipedia.org/wiki/SYN_cookie" target="_blank" rel="noopener">维基百科 SYN cookie</a> </p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/TCP/" rel="tag"># TCP</a>
+              <a href="/tags/%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B/" rel="tag"># 三次握手</a>
+              <a href="/tags/%E5%8D%8A%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97/" rel="tag"># 半连接队列</a>
+              <a href="/tags/SYN%E6%94%BB%E5%87%BB/" rel="tag"># SYN攻击</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/07/libevent%E5%85%A5%E9%97%A8/" rel="prev" title="libevent入门">
+      <i class="fa fa-chevron-left"></i> libevent入门
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP建立连接是三次握手"><span class="nav-number">1.1.</span> <span class="nav-text">TCP建立连接是三次握手</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TCP断开连接是四次挥手"><span class="nav-number">1.2.</span> <span class="nav-text">TCP断开连接是四次挥手</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP状态转移图"><span class="nav-number">2.</span> <span class="nav-text">TCP状态转移图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#半连接"><span class="nav-number">3.</span> <span class="nav-text">半连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#全连接队列"><span class="nav-number">3.1.</span> <span class="nav-text">全连接队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#半连接队列"><span class="nav-number">3.2.</span> <span class="nav-text">半连接队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#半连接存活时间"><span class="nav-number">3.3.</span> <span class="nav-text">半连接存活时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SYN-ACK-重传"><span class="nav-number">3.4.</span> <span class="nav-text">SYN+ACK 重传</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SYN-Flood攻击"><span class="nav-number">4.</span> <span class="nav-text">SYN Flood攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#防御方法"><span class="nav-number">4.1.</span> <span class="nav-text">防御方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Neo Li</p>
+  <div class="site-description" itemprop="description">write something</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/licovery" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;licovery" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:798060965@qq.com" title="E-Mail → mailto:798060965@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Neo Li</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.7.2
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
